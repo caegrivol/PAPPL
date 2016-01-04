@@ -9,7 +9,7 @@ svg {
   border: 5px solid #ccc;
 }
 body {
-  font: 14px sans-serif;
+  font: 14px Time New Roman;
   width: 100%;
   margin-left: auto;
   margin-right: auto;
@@ -33,12 +33,20 @@ line.link {
   stroke-opacity: 1;
   pointer-events: none;
 }
+line.link.transition {
+  stroke: #999999;
+  stroke-dasharray: 0,1 1;
+}
+line.link.action {
+  stroke: black;
+}
 text {
-	font: 14px sans-serif;
-	fill: gray;
+	font: 16px Time New Roman;
+	fill: #aaaaaa;
 	stroke: black;
 	stroke-width: 0.7px;
 }
+
 
     </style>
     <center>
@@ -52,8 +60,8 @@ text {
     <script type="text/javascript">
 var width = 960,     // largeur svg
     height = 600,     // hauteur svg
-    dr = 8,      // rayon des noeuds
-    off = 15,    // offset des englobements
+    dr = 12,      // rayon des noeuds
+    off = 14,    // offset des englobements
     expand = {}, // clusters
     data, net, force, hullg, hull, linkg, link, nodeg, node;
 
@@ -209,13 +217,14 @@ vis.append("svg:defs").selectAll("marker")
   .enter().append("svg:marker")
     .attr("id", String)
     .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 20)
+    .attr("refX", 19)
     .attr("refY", 0)
-    .attr("markerWidth", 9)
-    .attr("markerHeight", 9)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
     .attr("orient", "auto")
   .append("svg:path")
-    .attr("d", "M0,-5L10,0L0,5");
+    .attr("d", "M0,-5L10,0L0,5")
+    .attr("fill","#4d4d4d");
 
 d3.json("source.json", function(json) {
   data = json;
@@ -258,11 +267,11 @@ function init() {
     // nodes of another group or other group node or between two group nodes.
     //
     // The latter was done to keep the single-link groups ('blue', rose, ...) close.
-    return 160 +
-      Math.min(20 * Math.min((n1.size || (n1.group != n2.group ? n1.group_data.size : 0)),
+    return 180 +
+      Math.min(40 * Math.min((n1.size || (n1.group != n2.group ? n1.group_data.size : 0)),
                              (n2.size || (n1.group != n2.group ? n2.group_data.size : 0))),
-           -30 +
-           30 * Math.min((n1.link_count || (n1.group != n2.group ? n1.group_data.link_count : 0)),
+           -60 +
+           60 * Math.min((n1.link_count || (n1.group != n2.group ? n1.group_data.link_count : 0)),
                          (n2.link_count || (n1.group != n2.group ? n2.group_data.link_count : 0))),
            100);
       //return 150;
@@ -270,8 +279,8 @@ function init() {
     .linkStrength(function(l, i) {
     return 1;
     })
-    .gravity(0.07)   // gravity+charge tweaked to ensure good 'grouped' view (e.g. green group not smack between blue&orange, ...
-    .charge(-3000)    // ... charge is important to turn single-linked groups to the outside
+    .gravity(0.025)   // gravity+charge tweaked to ensure good 'grouped' view (e.g. green group not smack between blue&orange, ...
+    .charge(-4000)    // ... charge is important to turn single-linked groups to the outside
     .friction(0.5)   // friction adjusted to get dampened display: less bouncy bouncy ball [Swedish Chef, anyone?]
       .start();
 
@@ -296,7 +305,12 @@ console.log("hull click", d, arguments, this, expand[d.group]);
       .attr("x2", function(d) { return d.target.x; })
       .attr("y2", function(d) { return d.target.y; })
       .attr("marker-end", "url(#end)")
-      .style("stroke-width", 1);
+      .style("stroke-width", 2)
+      .attr('stroke', function (d) {
+  		if (d.source.group === d.target.group) {
+    		d3.select(this).classed('transition', true);
+  		}
+  		});
 
   node = nodeg.selectAll("g.node").data(net.nodes, nodeid);
   node.exit().remove();
