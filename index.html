@@ -43,7 +43,7 @@ d3-tip {
     <center>
   	<h1><i>Réseau de Régulation Biologique - MeForBio</i></h1>
   	<p>Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b></p>
-  	<span class="date">Projet Application INFO - École Centrale de Nantes - 15 Décembre 2015</span>
+  	<span class="date">Projet Application INFO - École Centrale de Nantes - 8 Janvier 2016</span>
   	<br><br>
   	</center>
   </head>
@@ -255,7 +255,7 @@ function init() {
   force = d3.layout.force()
       .nodes(net.nodes)
       .links(net.links)
-      .size([width, height])
+      .size([window.innerWidth, window.innerHeight-150])
       .linkDistance(function(l, i) {
       var n1 = l.source, n2 = l.target;
     // larger distance for bigger groups:
@@ -279,7 +279,7 @@ function init() {
     .linkStrength(function(l, i) {
     return 1;
     })
-    .gravity(0.1)   // gravity+charge tweaked to ensure good 'grouped' view (e.g. green group not smack between blue&orange, ...
+    .gravity(0.07)   // gravity+charge tweaked to ensure good 'grouped' view (e.g. green group not smack between blue&orange, ...
     .charge(-3000)    // ... charge is important to turn single-linked groups to the outside
     .friction(0.5)   // friction adjusted to get dampened display: less bouncy bouncy ball [Swedish Chef, anyone?]
       .start();
