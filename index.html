@@ -4,7 +4,6 @@
   <head>
     <title>Réseau de Régulation Biologique</title>
     <script src="d3.v2.js"></script>
-	<script type='text/javascript' src="d3.tip.v0.6.3.js"></script>
     <style type="text/css">
 svg {
   border: 5px solid #ccc;
@@ -31,12 +30,14 @@ path.hull {
 }
 line.link {
   stroke: #333;
-  stroke-opacity: 0.5;
+  stroke-opacity: 1;
   pointer-events: none;
 }
-
-d3-tip {
-	font: 12px sans-serif;
+text {
+	font: 14px sans-serif;
+	fill: gray;
+	stroke: black;
+	stroke-width: 0.7px;
 }
 
     </style>
@@ -201,16 +202,6 @@ var vis = body.append("svg")
    .append("g")
    .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
    .append("g");
-   
-//Set up tooltip
-var tip = d3.tip()
-    .attr('class', 'd3-tip')
-    .offset([-10, 0])
-    .html(function (d) {
-    if (!d.size) return  d.name + "";
-    else return "";
-})
-vis.call(tip);
 
 // Construction des flèches
 vis.append("svg:defs").selectAll("marker")
@@ -307,22 +298,31 @@ console.log("hull click", d, arguments, this, expand[d.group]);
       .attr("marker-end", "url(#end)")
       .style("stroke-width", 1);
 
-  node = nodeg.selectAll("circle.node").data(net.nodes, nodeid);
+  node = nodeg.selectAll("g.node").data(net.nodes, nodeid);
   node.exit().remove();
-  node.enter().append("circle")
-      // if (d.size) -- d.size > 0 when d is a group node.
-      .attr("class", function(d) { return "node" + (d.size?"":" leaf"); })
-      .attr("r", function(d) { return d.size ? d.size + dr : dr+1; })
-      .attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; })
-      .style("fill", function(d) { return fill(d.group); })
-      .on('mouseover', tip.show)
-      .on('mouseout', tip.hide)
-      .on("click", function(d) {
-console.log("node click", d, arguments, this, expand[d.group]);
-        expand[d.group] = !expand[d.group];
-    init();
-      });
+  var onEnter = node.enter();   
+  var g = onEnter
+  	.append("g")
+  	.attr("class", function(d) { return "node" + (d.size?"":" leaf"); })
+  	.attr("transform", function(d) { 
+    return "translate(" + d.x + "," + d.y + ")"; 
+  });
+  
+  g.append("circle")
+  	// if (d.size) -- d.size > 0 when d is a group node.      
+  	.attr("r", function(d) { return d.size ? d.size + dr : dr+1; })
+  	.style("fill", function(d) { return fill(d.group); })
+  	.on("click", function(d) {
+    	expand[d.group] = !expand[d.group];
+    	init();
+  });
+  
+  g.append("text")
+  	.text(function(d,i){
+    if (d['name']){
+    	return d['name'];
+    }
+});
 
   node.call(force.drag);
 
@@ -337,8 +337,9 @@ console.log("node click", d, arguments, this, expand[d.group]);
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
 
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
+    node.attr("transform", function(d) { 
+   		return "translate(" + d.x + "," + d.y + ")"; 
+ 	});
         
   });
 }
