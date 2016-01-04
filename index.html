@@ -196,8 +196,8 @@ function zoom() {
 var body = d3.select("body");
 
 var vis = body.append("svg")
-   .attr("width", width)
-   .attr("height", height)
+   .attr("width", window.innerWidth)
+   .attr("height", window.innerHeight-150)
    .append("g")
    .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
    .append("g");
