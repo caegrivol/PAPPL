@@ -38,17 +38,23 @@ line.link.transition {
   stroke-dasharray: 0,1 1;
 }
 line.link.transition_action {
-  stroke: red;
+  stroke: #00b33c;
   stroke-dasharray: 0,1 1;
 }
 line.link.action {
-  stroke: red;
+  stroke: #00b33c;
+}
+line.link.recent_action {
+  stroke: #e62e00;
+  stroke-dasharray: 0,1 1;
+}
+line.link.recent {
+  stroke: #e62e00;
 }
 text {
 	font: 16px Time New Roman;
-	fill: #aaaaaa;
-	stroke: black;
-	stroke-width: 0.2px;
+	fill: black;
+	pointer-events: none;
 }
 
 
@@ -73,7 +79,7 @@ var curve = d3.svg.line()
     .interpolate("cardinal-closed")
     .tension(.9);
 
-var fill = d3.scale.category20();
+var fill = d3.scale.category10();
 
 function noop() { return false; }
 
@@ -120,7 +126,7 @@ function network(data, prev, index, expand) {
   for (var k=0; k<data.nodes.length; ++k) {
     var n = data.nodes[k],
         i = index(n),
-        l = gm[i] || (gm[i]=gn[i]) || (gm[i]={group:i, size:0, nodes:[]});
+        l = gm[i] || (gm[i]=gn[i]) || (gm[i]={group:i, name:n.name, gene:n.gene, level:n.level, value:n.value, size:0, nodes:[]});
 
     if (expand[i]) {
       // the node should be directly visible
@@ -320,6 +326,12 @@ console.log("hull click", d, arguments, this, expand[d.group]);
     			d3.select(this).classed('transition_action', true);
   			}
   		}
+  		if (d.value == 2) {
+    		d3.select(this).classed('recent', true);
+    		if (d.source.group === d.target.group) {
+    			d3.select(this).classed('transition_recent', true);
+  			}
+  		}
   		});
 
   node = nodeg.selectAll("g.node").data(net.nodes, nodeid);
@@ -336,15 +348,32 @@ console.log("hull click", d, arguments, this, expand[d.group]);
   	// if (d.size) -- d.size > 0 when d is a group node.      
   	.attr("r", function(d) { return d.size ? d.size + dr : dr+1; })
   	.style("fill", function(d) { return fill(d.group); })
+  	.style("stroke", "black")
+  	.attr('stroke-width', function (d) {
+  		if (d.value == 1) {
+  			return 2;
+  		}
+  		else {
+  			return 0;
+  		}
+  		})
   	.on("click", function(d) {
     	expand[d.group] = !expand[d.group];
     	init();
-  });
+  	});
   
   g.append("text")
   	.text(function(d,i){
-    if (d['name']){
-    	return d['name'];
+    if (!d.size){
+    	if (d.level==0) {
+    		return d.level+" . . . "+d.gene;
+    	}
+    	else {
+    		return d.level;
+    	}
+    }
+    else {
+    	return ". . . "+d.gene;
     }
 });
 
