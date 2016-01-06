@@ -1,0 +1,51 @@
+svg {
+  border: 5px solid #ccc;
+}
+body {
+  font: 14px Time New Roman;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+circle.node {
+  fill: lightsteelblue;
+  stroke: #555;
+  stroke-width: 3px;
+}
+circle.leaf {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+path.hull {
+  fill: lightsteelblue;
+  fill-opacity: 0.3;
+}
+line.link {
+  stroke: #333;
+  stroke-opacity: 1;
+  pointer-events: none;
+}
+line.link.transition {
+  stroke: #999999;
+  stroke-dasharray: 0,1 1;
+}
+line.link.transition_action {
+  stroke: #00b33c;
+  stroke-dasharray: 0,1 1;
+}
+line.link.action {
+  stroke: #00b33c;
+}
+line.link.recent_action {
+  stroke: #e62e00;
+  stroke-dasharray: 0,1 1;
+}
+line.link.recent {
+  stroke: #e62e00;
+}
+text {
+	font: 16px Time New Roman;
+	fill: black;
+	pointer-events: none;
+}
