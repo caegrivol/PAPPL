@@ -37,8 +37,12 @@ line.link.transition {
   stroke: #999999;
   stroke-dasharray: 0,1 1;
 }
+line.link.transition_action {
+  stroke: red;
+  stroke-dasharray: 0,1 1;
+}
 line.link.action {
-  stroke: black;
+  stroke: red;
 }
 text {
 	font: 16px Time New Roman;
@@ -159,7 +163,7 @@ function network(data, prev, index, expand) {
     u = expand[u] ? nm[e.source.name] : nm[u];
     v = expand[v] ? nm[e.target.name] : nm[v];
     var i = (u<v ? u+"|"+v : v+"|"+u),
-        l = lm[i] || (lm[i] = {source:u, target:v, size:0});
+        l = lm[i] || (lm[i] = {source:u, target:v, value:e.value, size:0});
     l.size += 1;
   }
   for (i in lm) { links.push(lm[i]); }
@@ -305,10 +309,16 @@ console.log("hull click", d, arguments, this, expand[d.group]);
       .attr("x2", function(d) { return d.target.x; })
       .attr("y2", function(d) { return d.target.y; })
       .attr("marker-end", "url(#end)")
-      .style("stroke-width", 2)
+      .attr("stroke-width", 2)
       .attr('stroke', function (d) {
   		if (d.source.group === d.target.group) {
     		d3.select(this).classed('transition', true);
+  		}
+  		if (d.value == 1) {
+    		d3.select(this).classed('action', true);
+    		if (d.source.group === d.target.group) {
+    			d3.select(this).classed('transition_action', true);
+  			}
   		}
   		});
 
