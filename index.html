@@ -44,7 +44,7 @@ text {
 	font: 16px Time New Roman;
 	fill: #aaaaaa;
 	stroke: black;
-	stroke-width: 0.7px;
+	stroke-width: 0.2px;
 }
 
 
@@ -67,7 +67,7 @@ var width = 960,     // largeur svg
 
 var curve = d3.svg.line()
     .interpolate("cardinal-closed")
-    .tension(.85);
+    .tension(.9);
 
 var fill = d3.scale.category20();
 
