@@ -303,6 +303,7 @@ console.log("hull click", d, arguments, this, expand[d.group]);
   			return 0;
   		}
   		})
+  	.on("mousedown", function(d) { d.fixed = true; })
   	.on("click", function(d) {
     	expand[d.group] = !expand[d.group];
     	init();
