@@ -3,15 +3,21 @@
 <html>
   <head>
     <title>Réseau de Régulation Biologique</title>
+    
     <script src="d3.v2.js"></script>
     <script type="text/javascript" src="jquery-1.7.js"></script>
+    <script type='text/javascript' src="jquery-ui.min.js"> </script>
+	<script type='text/javascript' src="jquery-ui.css"> </script>
+    
     <link rel="stylesheet" type="text/css" href="style.css">
     <center>
   	<h1><i>Réseau de Régulation Biologique - MeForBio</i></h1>
   	<p>Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b></p>
   	<span class="date">Projet Application INFO - École Centrale de Nantes - 8 Janvier 2016</span>
   	<br><br>
-  	<button onclick="clicks()">Grouper</button>
+  	<button onclick="clicks()">Grouper</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+   	<input id="search">
+    <button type="button" onclick="searchNode()">Chercher</button>
   	<br><br>
   	</center>
   </head>
@@ -191,7 +197,7 @@ var vis = body.append("svg")
    .attr("width", window.innerWidth)
    .attr("height", window.innerHeight-150)
    .append("g")
-   .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
+   .call(d3.behavior.zoom().scaleExtent([-8, 8]).on("zoom", zoom))
    .append("g");
 
 // Construction des flèches
@@ -352,6 +358,17 @@ console.log("hull click", d, arguments, this, expand[d.group]);
 });
 
   node.call(force.drag);
+  
+var optArray = [];
+for (var i = 0; i < node.length - 1; i++) {
+    optArray.push(node[i].name);
+}
+optArray = optArray.sort();
+$(function () {
+    $("#search").autocomplete({
+        source: optArray
+    });
+});
 
   force.on("tick", function() {
     if (!hull.empty()) {
@@ -374,6 +391,29 @@ console.log("hull click", d, arguments, this, expand[d.group]);
  	}
         
   });
+}
+
+function searchNode() {
+    //find the node
+    var selectedVal = document.getElementById('search').value;
+    var node = vis.selectAll("circle");
+    if (selectedVal == "none") {
+        node.style("stroke", "white").style("stroke-width", "1");
+    } else {
+        var selected = node.filter(function (d, i) {
+            return d.name != selectedVal;
+        });
+        selected.style("opacity", "0");
+        var link = vis.selectAll("line.link");
+        link.style("opacity", "0");
+        var text = vis.selectAll("text")
+        text.style("opacity", "0");
+        var hull = vis.selectAll("path.hull")
+        hull.style("opacity", "0");
+        d3.selectAll("circle, line.link, text, path.hull").transition()
+            .duration(5000)
+            .style("opacity", 1);
+    }
 }
 
     </script>
