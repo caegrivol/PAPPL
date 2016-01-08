@@ -13,7 +13,9 @@
             <p>Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b></p>
             <span class="date">Projet Application INFO - École Centrale de Nantes - 8 Janvier 2016</span>
             <br><br>
-            <button onclick="clicks()">Grouper</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            <a href="whatever.htm" onClick="window.print();return false"><img src="printer.png"></a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            <button onclick="aide()">Aide!</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            <button onclick="clicks()">Ouvrir/Fermer</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
             <input id="search">
             <button type="button" onclick="searchNode()">Chercher</button>
             <br><br>
@@ -56,6 +58,11 @@
             	$("circle").d3Click();
             	nbclicks=0;
             }
+            }
+            
+            function aide() { 
+            	alert("Noeuds -> Tapez Shift pour activer et Ctrl pour déactiver avant de passer la souris sur le noeud \n \n Liens -> Tapez Shift pour rouge, Alt pour vert et Ctrl pour noir avant de passer la souris sur le noeud \n \n Bouton Ouvrir/Fermer -> Appuyez pour voire l'intérieur de tous les gènes ou pour cacher les niveaux des gènes \n \n Chercher-> Écrivez le nom du gène et du niveau souhaité pour le trouver facilement - Example : Clock.1 (gène=Clock, niveau=1) \n \n");
+            	alert("Zoom -> Il est possible de zoomer et dézoomer à n'importe quel niveau avec le bouton central de la souris si elle est bien placé sur un noeud \n \n Traînée -> Vous pouvez déplacer librement les noeuds et ils seront fixés après les lâcher \n \n Clicker -> Un click sur un gène lui fait démonter et un click sur un niveau du gène réalise l'assemblage de tous les niveaux du gène \n \n");
             }
             
             function nodeid(n) {
@@ -184,16 +191,16 @@
             function zoom() {
               vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
             }
-            
-            // --------------------------------------------------------
+        	
+        	// --------------------------------------------------------
             
             var compteur=0;
             
             var body = d3.select("body");
             
             var vis = body.append("svg")
-               .attr("width", window.innerWidth)
-               .attr("height", window.innerHeight-150)
+               .attr("width", window.innerWidth-250)
+               .attr("height", window.innerHeight-250)
                .append("g")
                .call(d3.behavior.zoom().scaleExtent([-8, 8]).on("zoom", zoom))
                .append("g");
@@ -451,9 +458,7 @@
                         .duration(5000)
                         .style("opacity", 1);
                 }
-            }
-            
-                
+            }    
         </script>
     </body>
 </html>
