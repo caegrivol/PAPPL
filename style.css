@@ -17,6 +17,12 @@ circle.leaf {
   stroke: #fff;
   stroke-width: 1.5px;
 }
+circle.active {
+  stroke-width: 2;
+}
+circle.non-active {
+  stroke-width: 0;
+}
 path.hull {
   fill: lightsteelblue;
   fill-opacity: 0.3;
@@ -24,7 +30,6 @@ path.hull {
 line.link {
   stroke: #333;
   stroke-opacity: 1;
-  pointer-events: none;
 }
 line.link.transition {
   stroke: #999999;
@@ -37,7 +42,7 @@ line.link.transition_action {
 line.link.action {
   stroke: #00b33c;
 }
-line.link.recent_action {
+line.link.transition_recent {
   stroke: #e62e00;
   stroke-dasharray: 0,1 1;
 }

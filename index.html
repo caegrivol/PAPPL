@@ -293,6 +293,34 @@
                   .attr("y2", function(d) { return d.target.y; })
                   .attr("marker-end", "url(#end)")
                   .attr("stroke-width", 2)
+                  .on("mouseover", function(d) { 
+              		if (d3.event.shiftKey) {
+              			d3.select(this).classed('action', false);
+                		if (d.source.group === d.target.group) {
+                			d3.select(this).classed('transition_action', false);
+              			}
+              			d3.select(this).classed('recent', true);
+                		if (d.source.group === d.target.group) {
+                			d3.select(this).classed('transition_recent', true);
+              			}
+    				} 
+    				if (d3.event.ctrlKey) {
+    					d3.select(this).classed('recent', false);
+                		if (d.source.group === d.target.group) {
+                			d3.select(this).classed('transition_recent', false);
+              			}
+    				} 
+    				if (d3.event.altKey) {
+    					d3.select(this).classed('recent', false);
+                		if (d.source.group === d.target.group) {
+                			d3.select(this).classed('transition_recent', false);
+              			}
+              			d3.select(this).classed('action', true);
+                		if (d.source.group === d.target.group) {
+                			d3.select(this).classed('transition_action', true);
+              			}
+    				} 
+    				})
                   .attr('stroke', function (d) {
               		if (d.source.group === d.target.group) {
                 		d3.select(this).classed('transition', true);
@@ -335,6 +363,16 @@
               		}
               		})
               	.on("mousedown", function(d) { d.fixed = true; })
+              	.on("mouseover", function(d) { 
+              		if (d3.event.shiftKey) {
+              			d3.select(this).classed('non-active', false);
+              			d3.select(this).classed('active', true);
+    				} 
+    				if (d3.event.ctrlKey) {
+    					d3.select(this).classed('active', false);
+              			d3.select(this).classed('non-active', true);
+    				} 
+    			})
               	.on("click", function(d) {
                 	expand[d.group] = !expand[d.group];
                 	init();
