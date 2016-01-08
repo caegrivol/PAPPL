@@ -4,11 +4,14 @@
   <head>
     <title>Réseau de Régulation Biologique</title>
     <script src="d3.v2.js"></script>
+    <script type="text/javascript" src="jquery-1.7.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <center>
   	<h1><i>Réseau de Régulation Biologique - MeForBio</i></h1>
   	<p>Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b></p>
   	<span class="date">Projet Application INFO - École Centrale de Nantes - 8 Janvier 2016</span>
+  	<br><br>
+  	<button onclick="clicks()">Grouper</button>
   	<br><br>
   	</center>
   </head>
@@ -27,7 +30,29 @@ var curve = d3.svg.line()
 
 var fill = d3.scale.category10();
 
+jQuery.fn.d3Click = function () {
+  this.each(function (i, e) {
+    var evt = document.createEvent("MouseEvents");
+    evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+
+    e.dispatchEvent(evt);
+  });
+};
+
 function noop() { return false; }
+
+var nbclicks = 0;
+
+function clicks() { 
+if(nbclicks==0){
+	$("path.hull").d3Click();
+	nbclicks=1;
+}
+else{
+	$("circle").d3Click();
+	nbclicks=0;
+}
+}
 
 function nodeid(n) {
   return n.size ? "_g_"+n.group : n.name;
@@ -157,6 +182,8 @@ function zoom() {
 }
 
 // --------------------------------------------------------
+
+var compteur=0;
 
 var body = d3.select("body");
 
@@ -340,6 +367,11 @@ console.log("hull click", d, arguments, this, expand[d.group]);
     node.attr("transform", function(d) { 
    		return "translate(" + d.x + "," + d.y + ")"; 
  	});
+ 	
+ 	compteur=compteur+1;
+ 	if(compteur==1){
+ 		$("circle").d3Click();
+ 	}
         
   });
 }
