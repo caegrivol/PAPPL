@@ -54,3 +54,12 @@ text {
 	fill: black;
 	pointer-events: none;
 }
+#marker0{
+    fill:black;
+}
+#marker1{
+    fill:green;
+}
+#marker2{
+    fill:red;
+}

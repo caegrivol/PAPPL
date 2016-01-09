@@ -209,9 +209,9 @@
             
             // Construction des flèches
             vis.append("svg:defs").selectAll("marker")
-                .data(["end"])      
+                .data(["marker0","marker1","marker2"])      
               .enter().append("svg:marker")
-                .attr("id", String)
+                .attr("id", function(d) { return d; })
                 .attr("viewBox", "0 -5 10 10")
                 .attr("refX", 19)
                 .attr("refY", 0)
@@ -219,8 +219,7 @@
                 .attr("markerHeight", 6)
                 .attr("orient", "auto")
               .append("svg:path")
-                .attr("d", "M0,-5L10,0L0,5")
-                .attr("fill","#4d4d4d");
+                .attr("d", "M0,-5L10,0L0,5");
             
             d3.json("source.json", function(json) {
               data = json;
@@ -307,12 +306,12 @@
               link = linkg.selectAll("line.link").data(net.links, linkid);
               link.exit().remove();
               link.enter().append("line")
-                  .attr("class", "link")
+                  .attr("class", function(d) { return "link marker" + d.value; })
                   .attr("x1", function(d) { return d.source.x; })
                   .attr("y1", function(d) { return d.source.y; })
                   .attr("x2", function(d) { return d.target.x; })
                   .attr("y2", function(d) { return d.target.y; })
-                  .attr("marker-end", "url(#end)")
+                  .attr("marker-end", function(d) { return "url(#marker" + d.value +")"; })
                   .attr("stroke-width", 2)
                   .on("mouseover", function(d) { 
               		if (d3.event.shiftKey) {
