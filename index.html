@@ -316,6 +316,7 @@
                   .on("mouseover", function(d) { 
               		if (d3.event.shiftKey) {
               			d3.select(this).classed('action', false);
+              			d3.select(this).attr("marker-end", "url(#marker2)");
                 		if (d.source.group === d.target.group) {
                 			d3.select(this).classed('transition_action', false);
               			}
@@ -325,6 +326,7 @@
               			}
             } 
             if (d3.event.ctrlKey) {
+            d3.select(this).attr("marker-end", "url(#marker0)");
             d3.select(this).classed('recent', false);
                 		if (d.source.group === d.target.group) {
                 			d3.select(this).classed('transition_recent', false);
@@ -336,6 +338,7 @@
             } 
             if (d3.event.altKey) {
             d3.select(this).classed('recent', false);
+            d3.select(this).attr("marker-end", "url(#marker1)");
                 		if (d.source.group === d.target.group) {
                 			d3.select(this).classed('transition_recent', false);
               			}
