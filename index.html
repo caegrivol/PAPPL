@@ -153,7 +153,7 @@
                 u = expand[u] ? nm[e.source.name] : nm[u];
                 v = expand[v] ? nm[e.target.name] : nm[v];
                 var i = (u<v ? u+"|"+v : v+"|"+u),
-                    l = lm[i] || (lm[i] = {source:u, target:v, value:e.value, size:0});
+                    l = lm[i] || (lm[i] = {source:u, target:v, value:e.value, type:e.type, size:0});
                 l.size += 1;
               }
               for (i in lm) { links.push(lm[i]); }
@@ -303,14 +303,23 @@
                   expand[d.group] = false; init();
                 });
             
-              link = linkg.selectAll("line.link").data(net.links, linkid);
+              link = linkg.selectAll("path.link").data(net.links, linkid);
               link.exit().remove();
-              link.enter().append("line")
+              link.enter().append("path")
                   .attr("class", function(d) { return "link marker" + d.value; })
-                  .attr("x1", function(d) { return d.source.x; })
-                  .attr("y1", function(d) { return d.source.y; })
-                  .attr("x2", function(d) { return d.target.x; })
-                  .attr("y2", function(d) { return d.target.y; })
+                  .attr("d", function(d) {
+    var dx = d.target.x - d.source.x;
+    var dy = d.target.y - d.source.y;
+        if (d.type==1) {
+        	var dr = Math.sqrt(dx * dx + dy * dy);   
+        }
+        else {
+        	var dr = 0;   
+        }
+    return "M" + d.source.x + "," + d.source.y + 
+           "A" + dr + "," + dr + " 0 0 1," + d.target.x + "," + d.target.y + 
+           "A" + dr + "," + dr + " 0 0 0," + d.source.x + "," + d.source.y; 
+})
                   .attr("marker-end", function(d) { 
                   		if (d.value==3){
                   			return null;
@@ -444,10 +453,20 @@
                       .attr("d", drawCluster);
                 }
             
-                link.attr("x1", function(d) { return d.source.x; })
-                    .attr("y1", function(d) { return d.source.y; })
-                    .attr("x2", function(d) { return d.target.x; })
-                    .attr("y2", function(d) { return d.target.y; });
+                link.attr("d", function(d) {
+    var dx = d.target.x - d.source.x;
+    var dy = d.target.y - d.source.y;
+        if (d.type==1) {
+        	var dr = Math.sqrt(dx * dx + dy * dy);   
+        }
+        else {
+        	var dr = 0;   
+        }
+        
+    return "M" + d.source.x + "," + d.source.y + 
+           "A" + dr + "," + dr + " 0 0 1," + d.target.x + "," + d.target.y + 
+           "A" + dr + "," + dr + " 0 0 0," + d.source.x + "," + d.source.y; 
+});
             
                 node.attr("transform", function(d) { 
                		return "translate(" + d.x + "," + d.y + ")"; 

@@ -27,26 +27,26 @@ path.hull {
     fill: lightsteelblue;
     fill-opacity: 0.3;
 }
-line.link {
+path.link {
     stroke: #333;
     stroke-opacity: 1;
 }
-line.link.transition {
+path.link.transition {
     stroke: #999999;
     stroke-dasharray: 0,1 1;
 }
-line.link.transition_action {
+path.link.transition_action {
     stroke: #00b33c;
     stroke-dasharray: 0,1 1;
 }
-line.link.action {
+path.link.action {
     stroke: #00b33c;
 }
-line.link.transition_recent {
+path.link.transition_recent {
     stroke: #e62e00;
     stroke-dasharray: 0,1 1;
 }
-line.link.recent {
+path.link.recent {
     stroke: #e62e00;
 }
 text {
