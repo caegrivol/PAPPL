@@ -330,6 +330,10 @@
                 		if (d.source.group === d.target.group) {
                 			d3.select(this).classed('transition_recent', false);
               			}
+            d3.select(this).classed('action', false);
+                		if (d.source.group === d.target.group) {
+                			d3.select(this).classed('transition_action', false);
+              			}
             } 
             if (d3.event.altKey) {
             d3.select(this).classed('recent', false);
