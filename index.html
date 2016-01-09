@@ -101,7 +101,7 @@
         function linkid(l) {
             var u = nodeid(l.source),
                 v = nodeid(l.target);
-            return u < v ? u + "|" + v : v + "|" + u;
+            return u + "|" + v;
         }
 
 		//Fonction pour obtenir le gène d'un niveau
@@ -197,10 +197,10 @@
                 }
                 u = expand[u] ? nm[e.source.name] : nm[u];
                 v = expand[v] ? nm[e.target.name] : nm[v];
-                var i = (u < v ? u + "|" + v : v + "|" + u),
+                var i = u + "|" + v,
                     l = lm[i] || (lm[i] = {
-                        source: u,
-                        target: v,
+                        source: v,
+                        target: u,
                         value: e.value,
                         type: e.type,
                         size: 0
