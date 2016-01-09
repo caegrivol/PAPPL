@@ -15,8 +15,7 @@
         <br>
         <button onclick="aide()">Aide</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
         <button onclick="clicks()">Ouvrir/Fermer</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-        <a href="whatever.htm" onClick="window.print();return false"><img src="printer.png">
-        </a>
+        <a href="whatever.htm" onClick="window.print();return false"><img src="printer.png"></a>
         <br>
         <br>
         <div class="ui-widget">
@@ -536,13 +535,13 @@
                     return d.name != selectedVal;
                 });
                 selected.style("opacity", "0");
-                var link = vis.selectAll("line.link");
+                var link = vis.selectAll("path.link");
                 link.style("opacity", "0");
                 var text = vis.selectAll("text")
                 text.style("opacity", "0");
                 var hull = vis.selectAll("path.hull")
                 hull.style("opacity", "0");
-                d3.selectAll("circle, line.link, text, path.hull").transition()
+                d3.selectAll("circle, path.link, text, path.hull").transition()
                     .duration(5000)
                     .style("opacity", 1);
             }
