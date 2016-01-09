@@ -311,7 +311,14 @@
                   .attr("y1", function(d) { return d.source.y; })
                   .attr("x2", function(d) { return d.target.x; })
                   .attr("y2", function(d) { return d.target.y; })
-                  .attr("marker-end", function(d) { return "url(#marker" + d.value +")"; })
+                  .attr("marker-end", function(d) { 
+                  		if (d.value==3){
+                  			return null;
+                  		}
+                  		else{
+                  			return "url(#marker" + d.value +")"; 
+                  		}
+                  	})
                   .attr("stroke-width", 2)
                   .on("mouseover", function(d) { 
               		if (d3.event.shiftKey) {
