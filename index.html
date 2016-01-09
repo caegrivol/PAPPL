@@ -10,19 +10,23 @@
         <link rel="stylesheet" type="text/css" href="style.css">
         <center>
             <h1><i>Réseau de Régulation Biologique - MeForBio</i></h1>
-            <p>Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b></p>
-            <span class="date">Projet Application INFO - École Centrale de Nantes - 8 Janvier 2016</span>
+            Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b>
             <br><br>
-            <a href="whatever.htm" onClick="window.print();return false"><img src="printer.png"></a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
             <button onclick="aide()">Aide!</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
             <button onclick="clicks()">Ouvrir/Fermer</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            <a href="whatever.htm" onClick="window.print();return false"><img src="printer.png"></a>
+            <br><br>
+            <div class="ui-widget">
+            <label for="search">Gène: </label>
             <input id="search">
             <button type="button" onclick="searchNode()">Chercher</button>
-            <br><br>
+            </div>
+            <br>
         </center>
     </head>
     <body>
         <script type="text/javascript">
+        
             var width = 960,     // largeur svg
                 height = 600,     // hauteur svg
                 dr = 12,      // rayon des noeuds
@@ -276,8 +280,8 @@
                 .gravity(0.025)   // gravity+charge tweaked to ensure good 'grouped' view (e.g. green group not smack between blue&orange, ...
                 .charge(-4000)    // ... charge is important to turn single-linked groups to the outside
                 .friction(0.5)   // friction adjusted to get dampened display: less bouncy bouncy ball [Swedish Chef, anyone?]
-                  .start();
-            
+                .start();
+                
               hullg.selectAll("path.hull").remove();
               hull = hullg.selectAll("path.hull")
                   .data(convexHulls(net.nodes, getGroup, off))
@@ -401,17 +405,6 @@
             });
             
               node.call(force.drag);
-              
-            var optArray = [];
-            for (var i = 0; i < node.length - 1; i++) {
-                optArray.push(node[i].name);
-            }
-            optArray = optArray.sort();
-            $(function () {
-                $("#search").autocomplete({
-                    source: optArray
-                });
-            });
             
               force.on("tick", function() {
                 if (!hull.empty()) {
