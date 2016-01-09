@@ -4,59 +4,78 @@
 
 <head>
     <title>Réseau de Régulation Biologique</title>
+    
+    <!--Scripts .js des bibliothèques utilisées - jQuery et D3-->
     <script src="d3.v2.js"></script>
     <script type="text/javascript" src="jquery-1.10.2.js"></script>
-    <script type='text/javascript' src="jquery-ui.js">
-    </script>
+    <script type='text/javascript' src="jquery-ui.js"></script>
+    
+    <!--Fichier .css de style de toutes les éléments visuels de l'interface-->
     <link rel="stylesheet" type="text/css" href="style.css">
+    
     <center>
         <h1><i>Réseau de Régulation Biologique - MeForBio</i></h1> Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b>
         <br>
         <br>
+        
+        <!--Bouton Aide-->
         <button onclick="aide()">Aide</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        
+        <!--Bouton Ouvrir/Fermer-->
         <button onclick="clicks()">Ouvrir/Fermer</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        
+        <!--Bouton Printer-->
         <a href="whatever.htm" onClick="window.print();return false"><img src="printer.png"></a>
         <br>
         <br>
+        
+        <!--Bouton Chercher Gène-->
         <div class="ui-widget">
             <label for="search">Gène: </label>
             <select id="search"></select>
             <button type="button" onclick="searchNode()">Chercher</button>
         </div>
-        <br>
+        <br>   
     </center>
 </head>
 
 <body>
     <script type="text/javascript">
+    	//Script principal - SVG
+    	//Propriétés du SVG
         var width = 960, // largeur svg
             height = 600, // hauteur svg
             dr = 12, // rayon des noeuds
             off = 14, // offset des englobements
             expand = {}, // clusters
-            data, net, force, hullg, hull, linkg, link, nodeg, node;
+            data, net, force, hullg, hull, linkg, link, nodeg, node; //variables
 
         var curve = d3.svg.line()
             .interpolate("cardinal-closed")
-            .tension(.9);
+            .tension(.9); //Changer le format des englobements
 
+		//Palette de couleurs de tous les noeuds
         var fill = d3.scale.category10();
 
+		//Fontion jQuery pour clicker dans tous les éléments d'un type spécifié
+		//Utilisé pour garantir que tous les gènes soient ouverts au départ!
         jQuery.fn.d3Click = function() {
             this.each(function(i, e) {
                 var evt = document.createEvent("MouseEvents");
                 evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-
                 e.dispatchEvent(evt);
             });
         };
 
+		//Fonction toujous retour faux
         function noop() {
             return false;
         }
 
+		//initialiser le compteur d'entrés dans la fonction init()
         var nbclicks = 0;
 
+		//Fonction clicks qui sert laisser tous les gènes ouverts/fermés
         function clicks() {
             if (nbclicks == 0) {
                 $("path.hull").d3Click();
@@ -67,11 +86,14 @@
             }
         }
 
+		//Pop-up d'aide
         function aide() {
             alert("Noeuds -> Tapez Shift pour activer et Ctrl pour déactiver avant de passer la souris sur le noeud \n \n Liens -> Tapez Shift pour rouge, Alt pour vert et Ctrl pour noir avant de passer la souris sur le noeud \n \n Bouton Ouvrir/Fermer -> Appuyez pour voire l'intérieur de tous les gènes ou pour cacher les niveaux des gènes \n \n Chercher-> Choisissez le gène souhaité pour le trouver facilement \n \n");
             alert("Zoom -> Il est possible de zoomer et dézoomer à n'importe quel niveau avec le bouton central de la souris si elle est bien placé sur un noeud \n \n Traînée -> Vous pouvez déplacer librement les noeuds et ils seront fixés après les lâcher \n \n Clicker -> Un click sur un gène lui fait démonter et un click sur un niveau du gène réalise l'assemblage de tous les niveaux du gène \n \n");
         }
 
+		//Fonctions de retour d'id
+		
         function nodeid(n) {
             return n.size ? "_g_" + n.group : n.name;
         }
@@ -82,6 +104,7 @@
             return u < v ? u + "|" + v : v + "|" + u;
         }
 
+		//Fonction pour obtenir le gène d'un niveau
         function getGroup(n) {
             return n.group;
         }
