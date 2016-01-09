@@ -1,6 +1,8 @@
+/* Contour du SVG - interface */
 svg {
     border: 5px solid #ccc;
 }
+/* Police du texte */
 body {
     font: 14px Time New Roman;
     width: 100%;
@@ -8,58 +10,73 @@ body {
     margin-right: auto;
     text-align: center;
 }
+/* Style d'un noeud */
 circle.node {
     fill: lightsteelblue;
     stroke: #555;
     stroke-width: 3px;
 }
+/* Style d'une feuille */
 circle.leaf {
     stroke: #fff;
     stroke-width: 1.5px;
 }
+/* État actif */
 circle.active {
     stroke-width: 2;
 }
+/* État non-actif */
 circle.non-active {
     stroke-width: 0;
 }
+/* Style d'engoblement */
 path.hull {
     fill: lightsteelblue;
-    fill-opacity: 0.3;
+    fill-opacity: 0.5;
 }
+/* Lien normal */
 path.link {
     stroke: #333;
     stroke-opacity: 1;
 }
+/* Flèche pontillée */
 path.link.transition {
     stroke: #999999;
     stroke-dasharray: 0,1 1;
 }
+/* Flèche pontillée verte */
 path.link.transition_action {
     stroke: #00b33c;
     stroke-dasharray: 0,1 1;
 }
+/* Flèche verte */
 path.link.action {
     stroke: #00b33c;
 }
+/* Flèche pontillée rouge */
 path.link.transition_recent {
     stroke: #e62e00;
     stroke-dasharray: 0,1 1;
 }
+/* Flèche rouge */
 path.link.recent {
     stroke: #e62e00;
 }
+/* Texte à côté du noeud */
 text {
     font: 16px Time New Roman;
 	fill: black;
 	pointer-events: none;
 }
+/* Bout de la Flèche noir */
 #marker0{
     fill:black;
 }
+/* Bout de la Flèche vert */
 #marker1{
     fill:green;
 }
+/* Bout de la Flèche rouge */
 #marker2{
     fill:red;
 }
