@@ -18,16 +18,15 @@
             <a href="whatever.htm" onClick="window.print();return false"><img src="printer.png"></a>
             <br><br>
             <div class="ui-widget">
-            <label for="search">Gène: </label>
-            <select id="search"></select>
-            <button type="button" onclick="searchNode()">Chercher</button>
+                <label for="search">Gène: </label>
+                <select id="search"></select>
+                <button type="button" onclick="searchNode()">Chercher</button>
             </div>
             <br>
         </center>
     </head>
     <body>
         <script type="text/javascript">
-        
             var width = 960,     // largeur svg
                 height = 600,     // hauteur svg
                 dr = 12,      // rayon des noeuds
@@ -196,8 +195,8 @@
             function zoom() {
               vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
             }
-        	
-        	// --------------------------------------------------------
+            
+            // --------------------------------------------------------
             
             var compteur=0;
             
@@ -229,16 +228,16 @@
               data = json;
               
               function createSelect(options){
-    $.each(options,function(index,item){
-           $("#search").append($("<option></option>").attr("value", item.name).text(item.name));
-
-    });
-}
-
-$(document).ready(function(){
-createSelect(json.nodes);
-});
-  
+            $.each(options,function(index,item){
+            $("#search").append($("<option></option>").attr("value", item.name).text(item.name));
+            
+            });
+            }
+            
+            $(document).ready(function(){
+            createSelect(json.nodes);
+            });
+            
               for (var i=0; i<data.links.length; ++i) {
                 o = data.links[i];
                 o.source = data.nodes[o.source];
@@ -327,15 +326,15 @@ createSelect(json.nodes);
                 		if (d.source.group === d.target.group) {
                 			d3.select(this).classed('transition_recent', true);
               			}
-    				} 
-    				if (d3.event.ctrlKey) {
-    					d3.select(this).classed('recent', false);
+            } 
+            if (d3.event.ctrlKey) {
+            d3.select(this).classed('recent', false);
                 		if (d.source.group === d.target.group) {
                 			d3.select(this).classed('transition_recent', false);
               			}
-    				} 
-    				if (d3.event.altKey) {
-    					d3.select(this).classed('recent', false);
+            } 
+            if (d3.event.altKey) {
+            d3.select(this).classed('recent', false);
                 		if (d.source.group === d.target.group) {
                 			d3.select(this).classed('transition_recent', false);
               			}
@@ -343,8 +342,8 @@ createSelect(json.nodes);
                 		if (d.source.group === d.target.group) {
                 			d3.select(this).classed('transition_action', true);
               			}
-    				} 
-    				})
+            } 
+            })
                   .attr('stroke', function (d) {
               		if (d.source.group === d.target.group) {
                 		d3.select(this).classed('transition', true);
@@ -391,12 +390,12 @@ createSelect(json.nodes);
               		if (d3.event.shiftKey) {
               			d3.select(this).classed('non-active', false);
               			d3.select(this).classed('active', true);
-    				} 
-    				if (d3.event.ctrlKey) {
-    					d3.select(this).classed('active', false);
+            } 
+            if (d3.event.ctrlKey) {
+            d3.select(this).classed('active', false);
               			d3.select(this).classed('non-active', true);
-    				} 
-    			})
+            } 
+            })
               	.on("click", function(d) {
                 	expand[d.group] = !expand[d.group];
                 	init();
