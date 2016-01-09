@@ -4,21 +4,22 @@
     <head>
         <title>Réseau de Régulation Biologique</title>
         <script src="d3.v2.js"></script>
-        <script type="text/javascript" src="jquery-1.7.js"></script>
-        <script type='text/javascript' src="jquery-ui.min.js"> </script>
+        <script type="text/javascript" src="jquery-1.10.2.js"></script>
+        <script type='text/javascript' src="jquery-ui.js"> </script>
         <script type='text/javascript' src="jquery-ui.css"> </script>
+        <link rel="stylesheet" type="text/css" href="styleSearch.css">
         <link rel="stylesheet" type="text/css" href="style.css">
         <center>
             <h1><i>Réseau de Régulation Biologique - MeForBio</i></h1>
             Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b>
             <br><br>
-            <button onclick="aide()">Aide!</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            <button onclick="aide()">Aide</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
             <button onclick="clicks()">Ouvrir/Fermer</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
             <a href="whatever.htm" onClick="window.print();return false"><img src="printer.png"></a>
             <br><br>
             <div class="ui-widget">
             <label for="search">Gène: </label>
-            <input id="search">
+            <select id="search"></select>
             <button type="button" onclick="searchNode()">Chercher</button>
             </div>
             <br>
@@ -65,7 +66,7 @@
             }
             
             function aide() { 
-            	alert("Noeuds -> Tapez Shift pour activer et Ctrl pour déactiver avant de passer la souris sur le noeud \n \n Liens -> Tapez Shift pour rouge, Alt pour vert et Ctrl pour noir avant de passer la souris sur le noeud \n \n Bouton Ouvrir/Fermer -> Appuyez pour voire l'intérieur de tous les gènes ou pour cacher les niveaux des gènes \n \n Chercher-> Écrivez le nom du gène et du niveau souhaité pour le trouver facilement - Example : Clock.1 (gène=Clock, niveau=1) \n \n");
+            	alert("Noeuds -> Tapez Shift pour activer et Ctrl pour déactiver avant de passer la souris sur le noeud \n \n Liens -> Tapez Shift pour rouge, Alt pour vert et Ctrl pour noir avant de passer la souris sur le noeud \n \n Bouton Ouvrir/Fermer -> Appuyez pour voire l'intérieur de tous les gènes ou pour cacher les niveaux des gènes \n \n Chercher-> Choisissez le gène souhaité pour le trouver facilement \n \n");
             	alert("Zoom -> Il est possible de zoomer et dézoomer à n'importe quel niveau avec le bouton central de la souris si elle est bien placé sur un noeud \n \n Traînée -> Vous pouvez déplacer librement les noeuds et ils seront fixés après les lâcher \n \n Clicker -> Un click sur un gène lui fait démonter et un click sur un niveau du gène réalise l'assemblage de tous les niveaux du gène \n \n");
             }
             
@@ -226,6 +227,18 @@
             
             d3.json("source.json", function(json) {
               data = json;
+              
+              function createSelect(options){
+    $.each(options,function(index,item){
+           $("#search").append($("<option></option>").attr("value", item.name).text(item.name));
+
+    });
+}
+
+$(document).ready(function(){
+createSelect(json.nodes);
+});
+  
               for (var i=0; i<data.links.length; ++i) {
                 o = data.links[i];
                 o.source = data.nodes[o.source];
