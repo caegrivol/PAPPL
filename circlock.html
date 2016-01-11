@@ -20,8 +20,8 @@
         
         <!--Bouton Sélection de Réseau-->
         <select name="forma" onchange="location = this.options[this.selectedIndex].value;">
- 		<option value="index.html" selected>Circadian</option>
- 		<option value="circlock.html">Circlock</option>
+ 		<option value="index.html">Circadian</option>
+ 		<option value="circlock.html" selected>Circlock</option>
 		</select>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
         
         <!--Bouton Aide-->
@@ -291,7 +291,7 @@
             .append("svg:path")
             .attr("d", "M0,-5L10,0L0,5");
 
-        d3.json("circadian.json", function(json) {
+        d3.json("circlock.json", function(json) {
             data = json;
 
 			//Créer la liste du bouton chercher
