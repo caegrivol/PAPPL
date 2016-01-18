@@ -22,6 +22,10 @@
         <select name="forma" onchange="location = this.options[this.selectedIndex].value;">
  		<option value="index.html" selected>Circadian</option>
  		<option value="circlock.html">Circlock</option>
+		<option value="circlock2.html">Circlock2</option>
+	    <option value="metazoan.html">metazoan</option>
+		<option value="tcrsig94.html">tcrsig94</option>
+		<option value="ERBB_G1-S.html">ERBB_G1-S</option>
 		</select>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
         
         <!--Bouton Aide-->
@@ -59,8 +63,7 @@
         var curve = d3.svg.line()
             .interpolate("cardinal-closed")
             .tension(.95); //Changer le format des englobements
-
-		//Palette de couleurs de tous les noeuds
+	//Palette de couleurs de tous les noeuds
         var fill = d3.scale.category10();
 
 		//Fontion jQuery pour clicker dans tous les éléments d'un type spécifié
