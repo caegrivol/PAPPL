@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+
+<head>
+    <title>Réseau de Régulation Biologique</title>
+    
+    <!--Scripts .js des bibliothèques utilisées - jQuery et D3-->
+    <script src="d3.v2.js"></script>
+    <script type="text/javascript" src="jquery-1.10.2.js"></script>
+    <script type='text/javascript' src="jquery-ui.js"></script>
+    
+    <!--Fichier .css de style de toutes les éléments visuels de l'interface-->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    
+    <center>
+        <h1><i>Réseau de Régulation Biologique - MeForBio</i></h1> Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b>
+        <br>
+        <br>
+        
+        <!--Bouton Sélection de Réseau-->
+        <select name="forma" onchange="location = this.options[this.selectedIndex].value;">
+ 		<option value="index.html">Circadian</option>
+ 		<option value="circlock.html">Circlock</option>
+		<option value="circlock2.html" selected>Circlock2</option>
+		<option value="metazoan.html">metazoan</option>
+		<option value="tcrsig94.html">tcrsig94</option>
+		<option value="ERBB_G1-S.html">ERBB_G1-S</option>
+		</select>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        
+        <!--Bouton Aide-->
+        <button onclick="aide()">Aide</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        
+        <!--Bouton Ouvrir/Fermer-->
+        <button onclick="clicks()">Ouvrir/Fermer</button>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        
+        <!--Bouton Printer-->
+        <a href="whatever.htm" onClick="window.print();return false"><img src="printer.png"></a>
+        <br>
+        <br>
+        
+        <!--Bouton Chercher Gène-->
+        <div class="ui-widget">
+            <label for="search">Gène: </label>
+            <select id="search"></select>
+            <button type="button" onclick="searchNode()">Chercher</button>
+        </div>
+        <br>   
+    </center>
+</head>
+
+<body>
+    <script type="text/javascript">
+    	//Script principal - SVG
+    	//Propriétés du SVG
+        var width = 960, // largeur svg
+            height = 600, // hauteur svg
+            dr = 12, // rayon des noeuds
+            off = 16, // offset des englobements
+            expand = {}, // clusters
+            data, net, force, hullg, hull, linkg, link, nodeg, node; //variables
+
+        var curve = d3.svg.line()
+            .interpolate("cardinal-closed")
+            .tension(.95); //Changer le format des englobements
+
+		//Palette de couleurs de tous les noeuds
+        var fill = d3.scale.category10();
+
+		//Fontion jQuery pour clicker dans tous les éléments d'un type spécifié
+		//Utilisé pour garantir que tous les gènes soient ouverts au départ!
+        jQuery.fn.d3Click = function() {
+            this.each(function(i, e) {
+                var evt = document.createEvent("MouseEvents");
+                evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                e.dispatchEvent(evt);
+            });
+        };
+
+		//Fonction toujous retour faux
+        function noop() {
+            return false;
+        }
+
+		//initialiser le compteur d'entrés dans la fonction init()
+        var nbclicks = 0;
+
+		//Fonction clicks qui sert laisser tous les gènes ouverts/fermés
+        function clicks() {
+            if (nbclicks == 0) {
+                $("path.hull").d3Click();
+                nbclicks = 1;
+            } else {
+                $("circle").d3Click();
+                nbclicks = 0;
+            }
+        }
+
+		//Pop-up d'aide
+        function aide() {
+            alert("Noeuds -> Tapez Shift pour activer et Ctrl pour déactiver avant de passer la souris sur le noeud \n \n Liens -> Tapez Shift pour rouge, Alt pour vert et Ctrl pour noir avant de passer la souris sur le noeud \n \n Bouton Ouvrir/Fermer -> Appuyez pour voire l'intérieur de tous les gènes ou pour cacher les niveaux des gènes \n \n Chercher-> Choisissez le gène souhaité pour le trouver facilement \n \n");
+            alert("Zoom -> Il est possible de zoomer et dézoomer à n'importe quel niveau avec le bouton central de la souris si elle est bien placé sur un noeud \n \n Traînée -> Vous pouvez déplacer librement les noeuds et ils seront fixés après les lâcher \n \n Clicker -> Un click sur un gène lui fait démonter et un click sur un niveau du gène réalise l'assemblage de tous les niveaux du gène \n \n");
+        }
+
+		//Fonctions de retour d'id
+		
+        function nodeid(n) {
+            return n.size ? "_g_" + n.group : n.name;
+        }
+
+        function linkid(l) {
+            var u = nodeid(l.source),
+                v = nodeid(l.target);
+            return u + "|" + v;
+        }
+
+		//Fonction pour obtenir le gène d'un niveau
+        function getGroup(n) {
+            return n.group;
+        }
+
+        // Construction du réseau à visualiser
+        function network(data, prev, index, expand) {
+            expand = expand || {};
+            var gm = {}, // group map
+                nm = {}, // node map
+                lm = {}, // link map
+                gn = {}, // group nodes d'avant
+                gc = {}, // group centroids d'avant
+                nodes = [], // nodes de sortie
+                links = []; // links de sortie
+
+            // Procedure des noeuds d'avant pour réutiliser ou calculation du centroid
+            if (prev) {
+                prev.nodes.forEach(function(n) {
+                    var i = index(n),
+                        o;
+                    if (n.size > 0) {
+                        gn[i] = n;
+                        n.size = 0;
+                    } else {
+                        o = gc[i] || (gc[i] = {
+                            x: 0,
+                            y: 0,
+                            count: 0
+                        });
+                        o.x += n.x;
+                        o.y += n.y;
+                        o.count += 1;
+                    }
+                });
+            }
+
+            // Détermination des noeuds
+            for (var k = 0; k < data.nodes.length; ++k) {
+                var n = data.nodes[k],
+                    i = index(n),
+                    l = gm[i] || (gm[i] = gn[i]) || (gm[i] = {
+                        group: i,
+                        name: n.name,
+                        gene: n.gene,
+                        level: n.level,
+                        value: n.value,
+                        size: 0,
+                        nodes: []
+                    });
+
+                if (expand[i]) {
+                    // Le noeud doit être directement visible
+                    nm[n.name] = nodes.length;
+                    nodes.push(n);
+                    if (gn[i]) {
+                        // Placer nouveaux noeuds au cluster
+                        n.x = gn[i].x + Math.random();
+                        n.y = gn[i].y + Math.random();
+                    }
+                } else {
+                    // Le noeud fait partie d'un cluster demonté
+                    if (l.size == 0) {
+                        // Si le cluster est nouveau, ajouter et positionner au centroid du noeud feuille
+                        nm[i] = nodes.length;
+                        nodes.push(l);
+                        if (gc[i]) {
+                            l.x = gc[i].x / gc[i].count;
+                            l.y = gc[i].y / gc[i].count;
+                        }
+                    }
+                    l.nodes.push(n);
+                }
+                // Toujours compter la taille du groupe pour l'utiliser après dans les calculs de force du graphe
+                l.size += 1;
+                n.group_data = l;
+            }
+
+            for (i in gm) {
+                gm[i].link_count = 0;
+            }
+
+            // Déterminer links
+            for (k = 0; k < data.links.length; ++k) {
+                var e = data.links[k],
+                    u = index(e.source),
+                    v = index(e.target);
+                if (u != v) {
+                    gm[u].link_count++;
+                    gm[v].link_count++;
+                }
+                u = expand[u] ? nm[e.source.name] : nm[u];
+                v = expand[v] ? nm[e.target.name] : nm[v];
+                var i = u + "|" + v,
+                    l = lm[i] || (lm[i] = {
+                        source: v,
+                        target: u,
+                        value: e.value,
+                        type: e.type,
+                        size: 0
+                    });
+                l.size += 1;
+            }
+            for (i in lm) {
+                links.push(lm[i]);
+            }
+
+            return {
+                nodes: nodes,
+                links: links
+            };
+        }
+
+        function convexHulls(nodes, index, offset) {
+            var hulls = {};
+
+            // Créer ensembles de points
+            for (var k = 0; k < nodes.length; ++k) {
+                var n = nodes[k];
+                if (n.size) continue;
+                var i = index(n),
+                    l = hulls[i] || (hulls[i] = []);
+                l.push([n.x - offset, n.y - offset]);
+                l.push([n.x - offset, n.y + offset]);
+                l.push([n.x + offset, n.y - offset]);
+                l.push([n.x + offset, n.y + offset]);
+            }
+
+            // Créer les engoblements
+            var hullset = [];
+            for (i in hulls) {
+                hullset.push({
+                    group: i,
+                    path: d3.geom.hull(hulls[i])
+                });
+            }
+
+            return hullset;
+        }
+
+		//Déssiner engoblement
+        function drawCluster(d) {
+            return curve(d.path); // 0.8 souhaité
+        }
+
+        //Fonction de Zoom
+        function zoom() {
+            vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+        }
+
+        // --------------------------------------------------------
+
+        var compteur = 0;
+
+        var body = d3.select("body");
+
+		//Création du SVG et ses propriétés
+        var vis = body.append("svg")
+            .attr("width", window.innerWidth - 50) //largeur d'écran
+            .attr("height", window.innerHeight - 220) //hauteur d'écran
+            .append("g")
+            .call(d3.behavior.zoom().scaleExtent([-8, 8]).on("zoom", zoom))
+            .append("g");
+
+        // Construction des flèches et ses propriétés
+        vis.append("svg:defs").selectAll("marker")
+            .data(["marker0", "marker1", "marker2"]) //types d'extremité de flèche
+            .enter().append("svg:marker")
+            .attr("id", function(d) {
+                return d;
+            })
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 19)
+            .attr("refY", 0)
+            //Dimensions des flèches
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5");
+
+        d3.json("circlock2.json", function(json) {
+            data = json;
+
+			//Créer la liste du bouton chercher
+			
+            function createSelect(options) {
+                $.each(options, function(index, item) {
+                    $("#search").append($("<option></option>").attr("value", item.name).text(item.name));
+
+                });
+            }
+
+            $(document).ready(function() {
+                createSelect(json.nodes);
+            });
+			
+			//Union des noeuds et liens
+			
+            for (var i = 0; i < data.links.length; ++i) {
+                o = data.links[i];
+                o.source = data.nodes[o.source];
+                o.target = data.nodes[o.target];
+            }
+
+            hullg = vis.append("g");
+            linkg = vis.append("g");
+            nodeg = vis.append("g");
+
+			//Fonction d'initialisation de la boucle infinie
+            init();
+
+            vis.attr("opacity", 1e-6)
+                .transition()
+                .duration(1000)
+                .attr("opacity", 1);
+
+        });
+
+		//Fonction principale
+        function init() {
+            if (force) force.stop();
+
+			//Acquisition du réseau
+            net = network(data, net, getGroup, expand);
+
+			//Établissement des paramètres du force layour
+            force = d3.layout.force()
+                .nodes(net.nodes)
+                .links(net.links)
+                .size([window.innerWidth-50, window.innerHeight-220])
+                .linkDistance(function(l, i) {
+                    var n1 = l.source,
+                        n2 = l.target;
+                    // Distance supérieure pour les grans groupes
+                    // Distance petite si noeud a très peu de liens
+					//Configuration de la distance pour les différents cas
+                    return 180 +
+                        Math.min(40 * Math.min((n1.size || (n1.group != n2.group ? n1.group_data.size : 0)), (n2.size || (n1.group != n2.group ? n2.group_data.size : 0))), -60 +
+                            60 * Math.min((n1.link_count || (n1.group != n2.group ? n1.group_data.link_count : 0)), (n2.link_count || (n1.group != n2.group ? n2.group_data.link_count : 0))),
+                            100);
+                    //return 150;
+                })
+                .linkStrength(function(l, i) {
+                    return 1;
+                })
+                //Joueur avec les trois paramètres pour trouver la bonne visualisation
+                .gravity(0.025) // gravité du layout entre les noeuds
+                .charge(-4000) // force entre les noeuds
+                .friction(0.5) // friction fait les noeuds "sauter" et empèche la collision
+                .start();
+
+			//Création des engoblements
+            hullg.selectAll("path.hull").remove();
+            hull = hullg.selectAll("path.hull")
+                .data(convexHulls(net.nodes, getGroup, off))
+                .enter().append("path")
+                .attr("class", "hull")
+                .attr("d", drawCluster)
+                //Couleur
+                .style("fill", function(d) {
+                    return fill(d.group);
+                })
+                //Grouper
+                .on("click", function(d) {
+                    console.log("hull click", d, arguments, this, expand[d.group]);
+                    expand[d.group] = false;
+                    init();
+                });
+
+			//Création des liens
+            link = linkg.selectAll("path.link").data(net.links, linkid);
+            link.exit().remove();
+            link.enter().append("path")
+                .attr("class", function(d) {
+                    return "link marker" + d.value;
+                })
+                //Courbe et position des flèches
+                .attr("d", function(d) {
+                    var dx = d.target.x - d.source.x;
+                    var dy = d.target.y - d.source.y;
+                    if (d.type == 1) {
+                        var dr = Math.sqrt(dx * dx + dy * dy);
+                    } else {
+                        var dr = 0;
+                    }
+                    return "M" + d.source.x + "," + d.source.y +
+                        "A" + dr + "," + dr + " 0 0 1," + d.target.x + "," + d.target.y +
+                        "A" + dr + "," + dr + " 0 0 0," + d.source.x + "," + d.source.y;
+                })
+                .attr("marker-end", function(d) {
+                    if (d.value == 3) {
+                        return null;
+                    } else {
+                        return "url(#marker" + d.value + ")";
+                    }
+                })
+                .attr("stroke-width", 2)
+                //Events de passage de mouse
+                .on("mouseover", function(d) {
+                	//Shift appuyé
+                    if (d3.event.shiftKey) {
+                        d3.select(this).classed('action', false);
+                        d3.select(this).attr("marker-end", "url(#marker2)");
+                        if (d.source.group === d.target.group) {
+                            d3.select(this).classed('transition_action', false);
+                        }
+                        d3.select(this).classed('recent', true);
+                        if (d.source.group === d.target.group) {
+                            d3.select(this).classed('transition_recent', true);
+                        }
+                        if (d.value == 3) {
+                            d3.select(this).attr("marker-end", null);
+                        }
+                    }
+                    //CTRL appuyé
+                    if (d3.event.ctrlKey) {
+                        d3.select(this).attr("marker-end", "url(#marker0)");
+                        d3.select(this).classed('recent', false);
+                        if (d.source.group === d.target.group) {
+                            d3.select(this).classed('transition_recent', false);
+                        }
+                        d3.select(this).classed('action', false);
+                        if (d.source.group === d.target.group) {
+                            d3.select(this).classed('transition_action', false);
+                        }
+                        if (d.value == 3) {
+                            d3.select(this).attr("marker-end", null);
+                        }
+                    }
+                    //ALT appuyé
+                    if (d3.event.altKey) {
+                        d3.select(this).classed('recent', false);
+                        d3.select(this).attr("marker-end", "url(#marker1)");
+                        if (d.source.group === d.target.group) {
+                            d3.select(this).classed('transition_recent', false);
+                        }
+                        d3.select(this).classed('action', true);
+                        if (d.source.group === d.target.group) {
+                            d3.select(this).classed('transition_action', true);
+                        }
+                        if (d.value == 3) {
+                            d3.select(this).attr("marker-end", null);
+                        }
+                    }
+                })
+                //Types de flèches
+                .attr('stroke', function(d) {
+                    if (d.source.group === d.target.group) {
+                        d3.select(this).classed('transition', true);
+                    }
+                    if (d.value == 1) {
+                        d3.select(this).classed('action', true);
+                        if (d.source.group === d.target.group) {
+                            d3.select(this).classed('transition_action', true);
+                        }
+                    }
+                    if (d.value == 2) {
+                        d3.select(this).classed('recent', true);
+                        if (d.source.group === d.target.group) {
+                            d3.select(this).classed('transition_recent', true);
+                        }
+                    }
+                });
+			
+			//Création des noeuds
+            node = nodeg.selectAll("g.node").data(net.nodes, nodeid);
+            node.exit().remove();
+            var onEnter = node.enter();
+            var g = onEnter
+                .append("g")
+                .attr("class", function(d) {
+                    return "node" + (d.size ? "" : " leaf");
+                })
+                .attr("transform", function(d) {
+                    return "translate(" + d.x + "," + d.y + ")";
+                });
+
+			//Création des flèches
+            g.append("circle")
+                // if (d.size) -- d.size > 0 when d is a group node.      
+                .attr("r", function(d) {
+                    return d.size ? d.size + dr : dr + 1;
+                })
+                .style("fill", function(d) {
+                    return fill(d.group);
+                })
+                .style("stroke", "black")
+                //Gène actif ou pas
+                .attr('stroke-width', function(d) {
+                    if (d.value == 1) {
+                        return 2;
+                    } else {
+                        return 0;
+                    }
+                })
+                //Fixer le noeud après lâcher la souris
+                .on("mousedown", function(d) {
+                    d.fixed = true;
+                })
+                //Event de passage de la souris - active ou pas
+                .on("mouseover", function(d) {
+                    if (d3.event.shiftKey) {
+                        d3.select(this).classed('non-active', false);
+                        d3.select(this).classed('active', true);
+                    }
+                    if (d3.event.ctrlKey) {
+                        d3.select(this).classed('active', false);
+                        d3.select(this).classed('non-active', true);
+                    }
+                })
+                //Clicker pour démonter le gène
+                .on("click", function(d) {
+                    expand[d.group] = !expand[d.group];
+                    init();
+                });
+
+			//Création du texte à côté du noeud pour les différents cas
+            g.append("text")
+                .text(function(d, i) {
+                    if (!d.size) {
+                        if (d.level == 0) {
+                            return d.level + " . . . " + d.gene;
+                        } else {
+                            return d.level;
+                        }
+                    } else {
+                        return ". . . " + d.gene;
+                    }
+                });
+
+            node.call(force.drag);
+
+			//Fonction tick qui est lancé à tout instant et contrôle les positions du force layout
+            force.on("tick", function() {
+            	//Gestion des engoblements
+                if (!hull.empty()) {
+                    hull.data(convexHulls(net.nodes, getGroup, off))
+                        .attr("d", drawCluster);
+                }
+				
+				//Gestion des liens
+                link.attr("d", function(d) {
+                    var dx = d.target.x - d.source.x;
+                    var dy = d.target.y - d.source.y;
+                    if (d.type == 1) {
+                        var dr = Math.sqrt(dx * dx + dy * dy);
+                    } else {
+                        var dr = 0;
+                    }
+
+                    return "M" + d.source.x + "," + d.source.y +
+                        "A" + dr + "," + dr + " 0 0 1," + d.target.x + "," + d.target.y +
+                        "A" + dr + "," + dr + " 0 0 0," + d.source.x + "," + d.source.y;
+                });
+				
+				//Gestion des noeuds
+                node.attr("transform", function(d) {
+                    return "translate(" + d.x + "," + d.y + ")";
+                });
+				
+				//compteur du nombre de fois passées
+                compteur = compteur + 1;
+                if (compteur == 1) {
+                    $("circle").d3Click();
+                }
+
+            });
+        }
+		
+		//Fonction de recherche d'un gène
+        function searchNode() {
+            //trouver le noeud
+            var selectedVal = document.getElementById('search').value;
+            var node = vis.selectAll("circle");
+            if (selectedVal == "none") {
+                node.style("stroke", "white").style("stroke-width", "1");
+            } else {
+                var selected = node.filter(function(d, i) {
+                    return d.name != selectedVal;
+                });
+                //Changer toutes les opacités des autres éléments
+                selected.style("opacity", "0");
+                var link = vis.selectAll("path.link");
+                link.style("opacity", "0");
+                var text = vis.selectAll("text")
+                text.style("opacity", "0");
+                var hull = vis.selectAll("path.hull")
+                hull.style("opacity", "0");
+                //Transition lente - Tout comme avant
+                d3.selectAll("circle, path.link, text, path.hull").transition()
+                    .duration(5000)
+                    .style("opacity", 1);
+            }
+        }
+    </script>
+</body>
+
+</html>
