@@ -20,13 +20,13 @@
         
         <!--Bouton Sélection de Réseau-->
         <select name="forma" onchange="location = this.options[this.selectedIndex].value;">
-  		<option value="index.html">Circadian</option>
- 		<option value="circlock.html" selected>Circlock</option>
-		<option value="circlock2.html">Circlock 2</option>
+ 		<option value="index.html">Circadian</option>
+ 		<option value="circlock.html">Circlock</option>
+		<option value="circlock2.html">Circlock2</option>
 	    <option value="metazoan.html">metazoan</option>
 		<option value="tcrsig94.html">tcrsig94</option>
 		<option value="ERBB_G1-S.html">ERBB_G1-S</option>
-		<option value="tcrsig40.html" >tcrsig40</option>
+		<option value="tcrsig40.html" selected>tcrsig40</option>
 		<option value="egfr104.html">egfr104</option>
 		</select>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
         
@@ -65,8 +65,7 @@
         var curve = d3.svg.line()
             .interpolate("cardinal-closed")
             .tension(.95); //Changer le format des englobements
-
-		//Palette de couleurs de tous les noeuds
+	//Palette de couleurs de tous les noeuds
         var fill = d3.scale.category10();
 
 		//Fontion jQuery pour clicker dans tous les éléments d'un type spécifié
@@ -297,7 +296,7 @@
             .append("svg:path")
             .attr("d", "M0,-5L10,0L0,5");
 
-        d3.json("circlock.json", function(json) {
+        d3.json("tcrsig40.json", function(json) {
             data = json;
 
 			//Créer la liste du bouton chercher
