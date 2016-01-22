@@ -1,351 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <html>
-  <head>
-    <title>Réseau de Régulation Biologique</title>
-    <script src="d3.v2.js"></script>
-	<script type='text/javascript' src="d3.tip.v0.6.3.js"></script>
-    <style type="text/css">
-svg {
-  border: 5px solid #ccc;
-}
-body {
-  font: 14px sans-serif;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-}
-circle.node {
-  fill: lightsteelblue;
-  stroke: #555;
-  stroke-width: 3px;
-}
-circle.leaf {
-  stroke: #fff;
-  stroke-width: 1.5px;
-}
-path.hull {
-  fill: lightsteelblue;
-  fill-opacity: 0.3;
-}
-line.link {
-  stroke: #333;
-  stroke-opacity: 0.5;
-  pointer-events: none;
-}
-
-d3-tip {
-	font: 12px sans-serif;
-}
-
-    </style>
-    <center>
-  	<h1><i>Réseau de Régulation Biologique - MeForBio</i></h1>
-  	<p>Carlos Eduardo <b>GRIVOL JÚNIOR</b> / Romain <b>GIUDICE</b></p>
-  	<span class="date">Projet Application INFO - École Centrale de Nantes - 15 Décembre 2015</span>
-  	<br><br>
-  	</center>
-  </head>
-  <body>
-    <script type="text/javascript">
-var width = 960,     // largeur svg
-    height = 600,     // hauteur svg
-    dr = 8,      // rayon des noeuds
-    off = 15,    // offset des englobements
-    expand = {}, // clusters
-    data, net, force, hullg, hull, linkg, link, nodeg, node;
-
-var curve = d3.svg.line()
-    .interpolate("cardinal-closed")
-    .tension(.85);
-
-var fill = d3.scale.category20();
-
-function noop() { return false; }
-
-function nodeid(n) {
-  return n.size ? "_g_"+n.group : n.name;
-}
-
-function linkid(l) {
-  var u = nodeid(l.source),
-      v = nodeid(l.target);
-  return u<v ? u+"|"+v : v+"|"+u;
-}
-
-function getGroup(n) { return n.group; }
-
-// constructs the network to visualize
-function network(data, prev, index, expand) {
-  expand = expand || {};
-  var gm = {},    // group map
-      nm = {},    // node map
-      lm = {},    // link map
-      gn = {},    // previous group nodes
-      gc = {},    // previous group centroids
-      nodes = [], // output nodes
-      links = []; // output links
-
-  // process previous nodes for reuse or centroid calculation
-  if (prev) {
-    prev.nodes.forEach(function(n) {
-      var i = index(n), o;
-      if (n.size > 0) {
-        gn[i] = n;
-        n.size = 0;
-      } else {
-        o = gc[i] || (gc[i] = {x:0,y:0,count:0});
-        o.x += n.x;
-        o.y += n.y;
-        o.count += 1;
-      }
-    });
-  }
-
-  // determine nodes
-  for (var k=0; k<data.nodes.length; ++k) {
-    var n = data.nodes[k],
-        i = index(n),
-        l = gm[i] || (gm[i]=gn[i]) || (gm[i]={group:i, size:0, nodes:[]});
-
-    if (expand[i]) {
-      // the node should be directly visible
-      nm[n.name] = nodes.length;
-      nodes.push(n);
-      if (gn[i]) {
-        // place new nodes at cluster location (plus jitter)
-        n.x = gn[i].x + Math.random();
-        n.y = gn[i].y + Math.random();
-      }
-    } else {
-      // the node is part of a collapsed cluster
-      if (l.size == 0) {
-        // if new cluster, add to set and position at centroid of leaf nodes
-        nm[i] = nodes.length;
-        nodes.push(l);
-        if (gc[i]) {
-          l.x = gc[i].x / gc[i].count;
-          l.y = gc[i].y / gc[i].count;
-        }
-      }
-      l.nodes.push(n);
-    }
-  // always count group size as we also use it to tweak the force graph strengths/distances
-    l.size += 1;
-  n.group_data = l;
-  }
-
-  for (i in gm) { gm[i].link_count = 0; }
-
-  // determine links
-  for (k=0; k<data.links.length; ++k) {
-    var e = data.links[k],
-        u = index(e.source),
-        v = index(e.target);
-  if (u != v) {
-    gm[u].link_count++;
-    gm[v].link_count++;
-  }
-    u = expand[u] ? nm[e.source.name] : nm[u];
-    v = expand[v] ? nm[e.target.name] : nm[v];
-    var i = (u<v ? u+"|"+v : v+"|"+u),
-        l = lm[i] || (lm[i] = {source:u, target:v, size:0});
-    l.size += 1;
-  }
-  for (i in lm) { links.push(lm[i]); }
-
-  return {nodes: nodes, links: links};
-}
-
-function convexHulls(nodes, index, offset) {
-  var hulls = {};
-
-  // create point sets
-  for (var k=0; k<nodes.length; ++k) {
-    var n = nodes[k];
-    if (n.size) continue;
-    var i = index(n),
-        l = hulls[i] || (hulls[i] = []);
-    l.push([n.x-offset, n.y-offset]);
-    l.push([n.x-offset, n.y+offset]);
-    l.push([n.x+offset, n.y-offset]);
-    l.push([n.x+offset, n.y+offset]);
-  }
-
-  // create convex hulls
-  var hullset = [];
-  for (i in hulls) {
-    hullset.push({group: i, path: d3.geom.hull(hulls[i])});
-  }
-
-  return hullset;
-}
-
-function drawCluster(d) {
-  return curve(d.path); // 0.8
-}
-
-//Fonction de Zoom
-function zoom() {
-  vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-}
-
-// --------------------------------------------------------
-
-var body = d3.select("body");
-
-var vis = body.append("svg")
-   .attr("width", width)
-   .attr("height", height)
-   .append("g")
-   .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
-   .append("g");
-   
-//Set up tooltip
-var tip = d3.tip()
-    .attr('class', 'd3-tip')
-    .offset([-10, 0])
-    .html(function (d) {
-    if (!d.size) return  d.name + "";
-    else return "";
-})
-vis.call(tip);
-
-// Construction des flèches
-vis.append("svg:defs").selectAll("marker")
-    .data(["end"])      
-  .enter().append("svg:marker")
-    .attr("id", String)
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 20)
-    .attr("refY", 0)
-    .attr("markerWidth", 9)
-    .attr("markerHeight", 9)
-    .attr("orient", "auto")
-  .append("svg:path")
-    .attr("d", "M0,-5L10,0L0,5");
-
-d3.json("source.json", function(json) {
-  data = json;
-  for (var i=0; i<data.links.length; ++i) {
-    o = data.links[i];
-    o.source = data.nodes[o.source];
-    o.target = data.nodes[o.target];
-  }
-
-  hullg = vis.append("g");
-  linkg = vis.append("g");
-  nodeg = vis.append("g");
-
-  init();
-
-  vis.attr("opacity", 1e-6)
-    .transition()
-      .duration(1000)
-      .attr("opacity", 1);
-
-});
-
-function init() {
-  if (force) force.stop();
-
-  net = network(data, net, getGroup, expand);
-
-  force = d3.layout.force()
-      .nodes(net.nodes)
-      .links(net.links)
-      .size([width, height])
-      .linkDistance(function(l, i) {
-      var n1 = l.source, n2 = l.target;
-    // larger distance for bigger groups:
-    // both between single nodes and _other_ groups (where size of own node group still counts),
-    // and between two group nodes.
-    //
-    // reduce distance for groups with very few outer links,
-    // again both in expanded and grouped form, i.e. between individual nodes of a group and
-    // nodes of another group or other group node or between two group nodes.
-    //
-    // The latter was done to keep the single-link groups ('blue', rose, ...) close.
-    return 160 +
-      Math.min(20 * Math.min((n1.size || (n1.group != n2.group ? n1.group_data.size : 0)),
-                             (n2.size || (n1.group != n2.group ? n2.group_data.size : 0))),
-           -30 +
-           30 * Math.min((n1.link_count || (n1.group != n2.group ? n1.group_data.link_count : 0)),
-                         (n2.link_count || (n1.group != n2.group ? n2.group_data.link_count : 0))),
-           100);
-      //return 150;
-    })
-    .linkStrength(function(l, i) {
-    return 1;
-    })
-    .gravity(0.1)   // gravity+charge tweaked to ensure good 'grouped' view (e.g. green group not smack between blue&orange, ...
-    .charge(-3000)    // ... charge is important to turn single-linked groups to the outside
-    .friction(0.5)   // friction adjusted to get dampened display: less bouncy bouncy ball [Swedish Chef, anyone?]
-      .start();
-
-  hullg.selectAll("path.hull").remove();
-  hull = hullg.selectAll("path.hull")
-      .data(convexHulls(net.nodes, getGroup, off))
-    .enter().append("path")
-      .attr("class", "hull")
-      .attr("d", drawCluster)
-      .style("fill", function(d) { return fill(d.group); })
-      .on("click", function(d) {
-console.log("hull click", d, arguments, this, expand[d.group]);
-      expand[d.group] = false; init();
-    });
-
-  link = linkg.selectAll("line.link").data(net.links, linkid);
-  link.exit().remove();
-  link.enter().append("line")
-      .attr("class", "link")
-      .attr("x1", function(d) { return d.source.x; })
-      .attr("y1", function(d) { return d.source.y; })
-      .attr("x2", function(d) { return d.target.x; })
-      .attr("y2", function(d) { return d.target.y; })
-      .attr("marker-end", "url(#end)")
-      .style("stroke-width", 1);
-
-  node = nodeg.selectAll("circle.node").data(net.nodes, nodeid);
-  node.exit().remove();
-  node.enter().append("circle")
-      // if (d.size) -- d.size > 0 when d is a group node.
-      .attr("class", function(d) { return "node" + (d.size?"":" leaf"); })
-      .attr("r", function(d) { return d.size ? d.size + dr : dr+1; })
-      .attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; })
-      .style("fill", function(d) { return fill(d.group); })
-      .on('mouseover', tip.show)
-      .on('mouseout', tip.hide)
-      .on("click", function(d) {
-console.log("node click", d, arguments, this, expand[d.group]);
-        expand[d.group] = !expand[d.group];
-    init();
-      });
-
-  node.call(force.drag);
-
-  force.on("tick", function() {
-    if (!hull.empty()) {
-      hull.data(convexHulls(net.nodes, getGroup, off))
-          .attr("d", drawCluster);
-    }
-
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
-        
-  });
-}
-
-    </script>
-  </body>
-=======
 
 <head>
     <title>Réseau de Régulation Biologique</title>
@@ -365,13 +20,13 @@ console.log("node click", d, arguments, this, expand[d.group]);
         
         <!--Bouton Sélection de Réseau-->
         <select name="forma" onchange="location = this.options[this.selectedIndex].value;">
- 		<option value="index.html selected">Circadian</option>
+  		<option value="index.html">Circadian</option>
  		<option value="circlock.html">Circlock</option>
 		<option value="circlock2.html">Circlock2</option>
-	    <option value="metazoan.html">metazoan</option>
+	    <option value="metazoan.html" selected>metazoan</option>
 		<option value="tcrsig94.html">tcrsig94</option>
 		<option value="ERBB_G1-S.html">ERBB_G1-S</option>
-		<option value="tcrsig40.html">tcrsig40</option>
+		<option value="tcrsig40.html" >tcrsig40</option>
 		<option value="egfr104.html">egfr104</option>
 		</select>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
         
@@ -410,7 +65,8 @@ console.log("node click", d, arguments, this, expand[d.group]);
         var curve = d3.svg.line()
             .interpolate("cardinal-closed")
             .tension(.95); //Changer le format des englobements
-	//Palette de couleurs de tous les noeuds
+
+		//Palette de couleurs de tous les noeuds
         var fill = d3.scale.category10();
 
 		//Fontion jQuery pour clicker dans tous les éléments d'un type spécifié
@@ -444,8 +100,8 @@ console.log("node click", d, arguments, this, expand[d.group]);
 
 		//Pop-up d'aide
         function aide() {
-            alert("Noeuds -> Tapez Shift pour activer et Ctrl pour désactiver avant de passer la souris sur le noeud \n \n Liens -> Tapez Shift pour rouge, Alt pour vert et Ctrl pour noir avant de passer la souris sur le lien \n \n Bouton Ouvrir/Fermer -> Appuyez pour voire l'intérieur de tous les gènes ou pour cacher les niveaux des gènes \n \n Chercher-> Choisissez le gène souhaité pour le trouver facilement \n \n");
-            alert("Zoom -> Il est possible de zoomer et dézoomer à n'importe quel niveau avec le bouton central de la souris si elle est bien placé sur un noeud \n \n Traînée -> Vous pouvez déplacer librement les noeuds et ils seront fixés après les lâcher \n \n Clic -> Un clic sur un gène lui fait démonter et un clic sur un niveau du gène réalise l'assemblage de tous les niveaux du gène \n \n");
+            alert("Noeuds -> Tapez Shift pour activer et Ctrl pour déactiver avant de passer la souris sur le noeud \n \n Liens -> Tapez Shift pour rouge, Alt pour vert et Ctrl pour noir avant de passer la souris sur le noeud \n \n Bouton Ouvrir/Fermer -> Appuyez pour voire l'intérieur de tous les gènes ou pour cacher les niveaux des gènes \n \n Chercher-> Choisissez le gène souhaité pour le trouver facilement \n \n");
+            alert("Zoom -> Il est possible de zoomer et dézoomer à n'importe quel niveau avec le bouton central de la souris si elle est bien placé sur un noeud \n \n Traînée -> Vous pouvez déplacer librement les noeuds et ils seront fixés après les lâcher \n \n Clicker -> Un click sur un gène lui fait démonter et un click sur un niveau du gène réalise l'assemblage de tous les niveaux du gène \n \n");
         }
 
 		//Fonctions de retour d'id
@@ -641,7 +297,7 @@ console.log("node click", d, arguments, this, expand[d.group]);
             .append("svg:path")
             .attr("d", "M0,-5L10,0L0,5");
 
-        d3.json("circadian.json", function(json) {
+        d3.json("metazoan.json", function(json) {
             data = json;
 
 			//Créer la liste du bouton chercher
@@ -957,3 +613,5 @@ console.log("node click", d, arguments, this, expand[d.group]);
         }
     </script>
 </body>
+
+</html>

@@ -1,0 +1,25 @@
+{
+  "nodes":[
+    {"name":"a.0","group":1,"value":0,"level":0,"gene":"a"},
+    {"name":"a.1","group":1,"value":0,"level":1,"gene":"a"},
+    {"name":"c.0","group":2,"value":0,"level":0,"gene":"c"},
+    {"name":"c.1","group":2,"value":0,"level":1,"gene":"c"},
+    {"name":"f.0","group":3,"value":0,"level":0,"gene":"f"},
+    {"name":"f.1","group":3,"value":0,"level":1,"gene":"f"},
+    {"name":"COOP_f.1/c.0/","group":4,"value":0,"level":"a","gene":"COOP_f.1/c.0/"}
+  ],
+  "links":[
+ {"source":5,"target":6,"value":3,"type":"0"},
+ {"source":2,"target":6,"value":3,"type":"0"},
+ {"source":6,"target":0,"value":0,"type":"0"},
+ {"source":0,"target":1,"value":0,"type":"1"},
+ {"source":3,"target":1,"value":0,"type":"0"},
+ {"source":1,"target":0,"value":0,"type":"1"},
+ {"source":5,"target":2,"value":0,"type":"0"},
+ {"source":2,"target":3,"value":0,"type":"1"},
+ {"source":4,"target":3,"value":0,"type":"0"},
+ {"source":3,"target":2,"value":0,"type":"1"},
+ {"source":3,"target":2,"value":0,"type":"1"},
+ {"source":5,"target":4,"value":0,"type":"1"}
+  ]
+}
