@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Réseau de Régulation Biologique</title>
+<script src="d3.v3.min.js"></script>
+<style>
+ 
+path.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+ 
+path.link.twofive {
+  opacity: 0.25;
+}
+ 
+path.link.fivezero {
+  opacity: 0.50;
+}
+ 
+path.link.sevenfive {
+  opacity: 0.75;
+}
+ 
+path.link.onezerozero {
+  opacity: 1.0;
+}
+ 
+circle {
+  fill: #ccc;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+ 
+text {
+  fill: #000;
+  font: 10px sans-serif;
+  pointer-events: none;
+}
+ 
+</style>
+
+<header>
+  <center>
+  <h1><i>Réseau de Régulation Biologique - MeForBio</i></h1>
+  <p>Carlos <b>GRIVOL</b> / Romain <b>GIUDICE</b></p>
+  <span class="date">Projet Application INFO - École Centrale de Nantes - 4 Décembre 2015</span>
+  </center>
+  <script type='text/javascript' src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+</header>
+
+<body>
+<script>
+
+// Acquisition des données
+d3.csv("data.csv", function(error, links) {
+ 
+var nodes = {};
+ 
+// Calculer les nœuds distincts des liens.
+links.forEach(function(link) {
+    link.source = nodes[link.source] || 
+        (nodes[link.source] = {name: link.source, group:link.group});
+    link.target = nodes[link.target] || 
+        (nodes[link.target] = {name: link.target, group:link.group});
+    link.value = +link.value;
+});
+ 
+var width = 1200,
+    height = 550,
+    color = d3.scale.category20();
+
+ 
+var force = d3.layout.force()
+    .nodes(d3.values(nodes))
+    .links(links)
+    .size([width, height])
+    .linkDistance(60)
+    .charge(-350)
+    .on("tick", tick)
+    .start();
+ 
+// Définir la plage
+var  v = d3.scale.linear().range([0, 100]);
+ 
+// Mesurer la plage des données
+v.domain([0, d3.max(links, function(d) { return d.value; })]);
+ 
+// Attribuer un type par la valeur à encoder l'opacité
+links.forEach(function(link) {
+  if (v(link.value) <= 25) {
+    link.type = "twofive";
+  } else if (v(link.value) <= 50 && v(link.value) > 25) {
+    link.type = "fivezero";
+  } else if (v(link.value) <= 75 && v(link.value) > 50) {
+    link.type = "sevenfive";
+  } else if (v(link.value) <= 100 && v(link.value) > 75) {
+    link.type = "onezerozero";
+  }
+});
+ 
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom))
+    .append("g");
+ 
+// Construction des flèches
+svg.append("svg:defs").selectAll("marker")
+    .data(["end"])      
+  .enter().append("svg:marker")
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+  .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5");
+ 
+// Ajouter les liens et les flèches
+var path = svg.append("svg:g").selectAll("path")
+    .data(force.links())
+  .enter().append("svg:path")
+    .attr("class", function(d) { return "link " + d.type; })
+    .attr("marker-end", "url(#end)");
+ 
+// Définition des noeuds
+var node = svg.selectAll(".node")
+    .data(force.nodes())
+  .enter().append("g")
+    .attr("class", "node")
+    .on("mouseover", mouseover)
+    .on("mouseout", mouseout)
+    .call(force.drag);
+ 
+// Ajouter les noeuds
+node.append("circle")
+    .attr("r", 5)
+    .style("fill", function(d) { return color(d.group); });
+
+ 
+// Ajouter le texte
+node.append("text")
+    .attr("x", 12)
+    .attr("dy", ".35em")
+    .text(function(d) { return d.name; });
+ 
+// Lignes courbes
+function tick() {
+    path.attr("d", function(d) {
+        var dx = d.target.x - d.source.x,
+            dy = d.target.y - d.source.y,
+            dr = Math.sqrt(dx * dx + dy * dy);
+        return "M" + 
+            d.source.x + "," + 
+            d.source.y + "A" + 
+            dr + "," + dr + " 0 0,1 " + 
+            d.target.x + "," + 
+            d.target.y;
+    });
+ 
+    node
+        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+}
+ 
+// Mesures à prendre sur le clic de souris
+function mouseover() {
+    d3.select(this).select("text").transition()
+        .duration(750)
+        .attr("x", 22)
+        .style("stroke", "lightsteelblue")
+        .style("stroke-width", ".5px")
+        .style("font", "20px sans-serif");
+    d3.select(this).select("circle").transition()
+        .duration(750)
+        .attr("r", 16);
+}
+ 
+// Mesures à prendre sur le double clic de souris
+function mouseout() {
+    d3.select(this).select("circle").transition()
+        .duration(750)
+        .attr("r", 6);
+    d3.select(this).select("text").transition()
+        .duration(750)
+        .attr("x", 12)
+        .style("stroke", "none")
+        .style("fill", "black")
+        .style("stroke", "none")
+        .style("font", "10px sans-serif");
+}
+
+//Zoom function
+function zoom() {
+  svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+ 
+});
+ 
+</script>
+</body>
+</html>

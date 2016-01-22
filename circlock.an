@@ -1,0 +1,52 @@
+"BMAL1_cyt" [0,1]
+"BMAL1_nuc" [0,1]
+"CRY1" [0,1]
+"CRY2" [0,1]
+"Clock" [0,1]
+"ClockBMAL" [0,1]
+"PER1" [0,1]
+"PER2" [0,1]
+"PERCRY" [0,1]
+"RevErb_nuc" [0,1]
+"alpha" [0,1]
+
+
+"BMAL1_cyt" 0 -> 1 when "RevErb_nuc"=0
+"BMAL1_cyt" 1 -> 0 when "RevErb_nuc"=1
+
+"BMAL1_nuc" 0 -> 1 when "BMAL1_cyt"=1 and "Clock"=1
+"BMAL1_nuc" 1 -> 0 when "BMAL1_cyt"=0
+"BMAL1_nuc" 1 -> 0 when "Clock"=0
+
+"CRY1" 0 -> 1 when "ClockBMAL"=1 and "RevErb_nuc"=0
+"CRY1" 1 -> 0 when "ClockBMAL"=0
+"CRY1" 1 -> 0 when "RevErb_nuc"=1
+
+"CRY2" 0 -> 1 when "ClockBMAL"=1
+"CRY2" 1 -> 0 when "ClockBMAL"=0
+
+"ClockBMAL" 0 -> 1 when "BMAL1_nuc"=1 and "Clock"=1 and "PERCRY"=0
+"ClockBMAL" 1 -> 0 when "BMAL1_nuc"=0
+"ClockBMAL" 1 -> 0 when "Clock"=0
+"ClockBMAL" 1 -> 0 when "PERCRY"=1
+
+"PER1" 0 -> 1 when "ClockBMAL"=1
+"PER1" 1 -> 0 when "ClockBMAL"=0
+
+"PER2" 0 -> 1 when "ClockBMAL"=1
+"PER2" 0 -> 1 when "alpha"=1
+"PER2" 1 -> 0 when "ClockBMAL"=0 % alpha???
+"PER2" 1 -> 0 when "alpha"=0
+
+"PERCRY" 0 -> 1 when "CRY1"=0 and "CRY2"=1 and "PER2"=1
+"PERCRY" 0 -> 1 when "CRY1"=0 and "CRY2"=1 and "PER1"=1
+"PERCRY" 0 -> 1 when "CRY1"=1 and "PER2"=1
+"PERCRY" 0 -> 1 when "CRY1"=1 and "PER1"=1
+"PERCRY" 1 -> 0 when "CRY1"=0 and "CRY2"=0
+"PERCRY" 1 -> 0 when "CRY1"=0 and "PER1"=0 and "PER2"=0
+"PERCRY" 1 -> 0 when "CRY1"=1 and "PER1"=0 and "PER2"=0
+
+"RevErb_nuc" 0 -> 1 when "ClockBMAL"=1
+"RevErb_nuc" 1 -> 0 when "ClockBMAL"=0
+
+initial_context "BMAL1_cyt"=1, "Clock"=1
