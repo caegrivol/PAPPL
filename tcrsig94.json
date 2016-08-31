@@ -236,7 +236,7 @@
     {"name":"COOP_ccblp1.0/tcrlig.1/","group":140,"value":0,"level":"--","gene":"COOP_ccblp1.0/tcrlig.1/"},
     {"name":"COOP_fyn.0/lckp1.1/tcrb.1/","group":141,"value":0,"level":"--","gene":"COOP_fyn.0/lckp1.1/tcrb.1/"},
     {"name":"COOP_fyn.1/tcrb.1/","group":142,"value":0,"level":"--","gene":"COOP_fyn.1/tcrb.1/"},
-    {"name":"COOP_fyn.0/lckp1.0/","group":143,"value":0,"level":"--","gene":"COOP_fyn.0/lckp1.0/"},
+    {"name":"COOP_fyn.0/lckp1.0/*","group":143,"value":0,"level":"--","gene":"COOP_fyn.0/lckp1.0/*"},
     {"name":"COOP_sh3bp2.1/zap70.1/","group":144,"value":0,"level":"--","gene":"COOP_sh3bp2.1/zap70.1/"},
     {"name":"COOP_sh3bp2.0/x.0/","group":145,"value":0,"level":"--","gene":"COOP_sh3bp2.0/x.0/"},
     {"name":"COOP_sh3bp2.1/x.0/zap70.0/","group":146,"value":0,"level":"--","gene":"COOP_sh3bp2.1/x.0/zap70.0/"},
